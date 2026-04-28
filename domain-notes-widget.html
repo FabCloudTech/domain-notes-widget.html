@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEC+ Domains</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #191919; font-family: 'JetBrains Mono', monospace; width: 100%; height: 100%; overflow: hidden; }
+  body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+  /* PINK BAR */
+  .pink-bar { background: #FF4FA3; border-radius: 10px; padding: 9px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .pink-bar-title { font-size: 10px; font-weight: 800; color: #fff; letter-spacing: 0.08em; }
+  .pink-bar-right { display: flex; align-items: center; gap: 8px; }
+  .pink-bar-badge { font-size: 8px; font-weight: 800; background: rgba(0,0,0,0.2); color: #fff; padding: 2px 9px; border-radius: 20px; letter-spacing: 0.08em; }
+  .back-btn { font-size: 8px; font-weight: 800; background: rgba(0,0,0,0.2); color: #fff; border: none; padding: 3px 10px; border-radius: 20px; cursor: pointer; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; display: none; }
+  .back-btn:hover { background: rgba(0,0,0,0.35); }
+
+  /* GALLERY */
+  .gallery { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; flex-shrink: 0; }
+  .d-card { background: #111; border: 1.5px solid #2a2a2a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; position: relative; }
+  .d-card:hover { transform: translateY(-2px); }
+  .d-cover { width: 100%; height: 100px; object-fit: cover; object-position: top; display: block; }
+  .d-placeholder { width: 100%; height: 100px; background: #1a1a1a; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; font-family: 'JetBrains Mono', monospace; width: 100%; }
+  .d-placeholder:hover { background: #222; }
+  .d-ph-icon { font-size: 18px; }
+  .d-ph-text { font-size: 7px; color: #333; font-weight: 700; letter-spacing: 0.06em; }
+  .d-badge { position: absolute; top: 6px; right: 6px; font-size: 7px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.7); letter-spacing: 0.06em; z-index: 2; }
+  .d-swap { position: absolute; bottom: 6px; right: 6px; font-size: 7px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.7); color: #888; border: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; z-index: 2; display: none; }
+  .d-card:hover .d-swap { display: block; }
+  .d-swap:hover { color: #FF4FA3; }
+  .d-body { padding: 8px 10px 10px; }
+  .d-name { font-size: 10px; font-weight: 800; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .d-meta { font-size: 8px; color: #555; font-weight: 600; margin-bottom: 5px; }
+  .d-bar-track { height: 3px; background: #2a2a2a; border-radius: 20px; overflow: hidden; }
+  .d-bar-fill { height: 100%; border-radius: 20px; transition: width 0.4s; }
+
+  /* NOTES PAGE */
+  .notes-page { display: none; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+  .notes-page.show { display: flex; }
+  .notes-header { display: flex; align-items: center; gap: 10px; }
+  .notes-domain-badge { font-size: 9px; font-weight: 800; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.08em; }
+  .notes-title { font-size: 13px; font-weight: 800; color: #fff; flex: 1; }
+  .notes-area {
+    flex: 1;
+    background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 10px;
+    padding: 14px 16px; color: #d0d0d0; font-size: 12px; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; line-height: 1.7;
+    resize: none; outline: none; min-height: 200px;
+    letter-spacing: 0.02em;
+  }
+  .notes-area:focus { border-color: #FF4FA3; }
+  .notes-area::placeholder { color: #2a2a2a; }
+  .notes-footer { display: flex; justify-content: space-between; align-items: center; }
+  .save-btn { background: #FF4FA3; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 10px; font-weight: 800; cursor: pointer; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; transition: background 0.15s; }
+  .save-btn:hover { background: #d4006e; }
+  .save-status { font-size: 9px; color: #444; font-weight: 700; }
+
+  /* IMG MODAL */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100; align-items: center; justify-content: center; }
+  .modal.show { display: flex; }
+  .modal-box { background: #1e1e1e; border: 1.5px solid #FF4FA3; border-radius: 14px; padding: 20px; width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+  .modal-title { font-size: 10px; font-weight: 800; color: #FF4FA3; letter-spacing: 0.1em; }
+  .upload-btn { width: 100%; background: #FF4FA3; color: #fff; border: none; border-radius: 9px; padding: 13px; font-size: 11px; font-weight: 800; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+  .upload-btn:hover { background: #d4006e; }
+  .modal-status { font-size: 10px; font-weight: 700; text-align: center; color: #555; min-height: 16px; }
+  .modal-divider { display: flex; align-items: center; gap: 10px; }
+  .modal-divider::before,.modal-divider::after { content:''; flex:1; height:1px; background:#2a2a2a; }
+  .modal-divider span { font-size: 9px; color: #444; font-weight: 700; }
+  .modal-input { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 11px; font-family: 'JetBrains Mono', monospace; font-weight: 600; outline: none; }
+  .modal-input:focus { border-color: #FF4FA3; }
+  .modal-input::placeholder { color: #2a2a2a; }
+  .modal-btns { display: flex; gap: 8px; }
+  .btn-save { flex: 1; background: #2a2a2a; color: #fff; border: none; border-radius: 8px; padding: 9px; font-size: 10px; font-weight: 800; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+  .btn-cancel { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; border-radius: 8px; padding: 9px 12px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+  .btn-remove { background: #2a1414; color: #aa4444; border: none; border-radius: 8px; padding: 9px 10px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="pink-bar" id="pink-bar">
+  <div class="pink-bar-title" id="bar-title">⚔️ exam domains — sec+ sy0-701</div>
+  <div class="pink-bar-right">
+    <div class="pink-bar-badge" id="bar-badge">5 domains</div>
+    <button class="back-btn" id="back-btn" onclick="goBack()">← back</button>
+  </div>
+</div>
+
+<!-- GALLERY VIEW -->
+<div class="gallery" id="gallery"></div>
+
+<!-- NOTES VIEW -->
+<div class="notes-page" id="notes-page">
+  <div class="notes-header">
+    <div class="notes-domain-badge" id="notes-badge"></div>
+    <div class="notes-title" id="notes-title"></div>
+  </div>
+  <textarea class="notes-area" id="notes-area" placeholder="start typing your notes here...&#10;&#10;→ key terms&#10;→ things to remember&#10;→ questions to look up"></textarea>
+  <div class="notes-footer">
+    <div class="save-status" id="save-status">notes auto-save as you type</div>
+    <button class="save-btn" onclick="saveNotes()">save notes</button>
+  </div>
+</div>
+
+<!-- IMG MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">add cover image</div>
+    <button class="upload-btn" onclick="document.getElementById('file-in').click()">📁 choose from computer</button>
+    <input type="file" id="file-in" accept="image/*" style="display:none" onchange="handleFile(this)">
+    <div class="modal-status" id="modal-status">jpg · png · gif · webp · any size</div>
+    <div class="modal-divider"><span>or paste a url</span></div>
+    <input class="modal-input" id="modal-url" type="text" placeholder="paste image or gif url...">
+    <div class="modal-btns">
+      <button class="btn-save" onclick="saveImg()">save</button>
+      <button class="btn-cancel" onclick="closeModal()">cancel</button>
+      <button class="btn-remove" onclick="removeImg()">remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DOMAINS = [
+  { id:'threats', name:'Threats & Attacks', pct:24, color:'#FF4FA3' },
+  { id:'arch',    name:'Architecture',      pct:21, color:'#FFE234' },
+  { id:'impl',    name:'Implementation',    pct:25, color:'#D4BBFF' },
+  { id:'ops',     name:'Operations & IR',   pct:16, color:'#FFB347' },
+  { id:'grc',     name:'GRC Domain',        pct:14, color:'#66FFD4' },
+];
+
+// ── IndexedDB ─────────────────────────────
+let db;
+function openDB() {
+  return new Promise((res,rej) => {
+    const req = indexedDB.open('bella_sec_domains',1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('imgs');
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = rej;
+  });
+}
+const dbSave = (id,v) => new Promise((res,rej)=>{ const tx=db.transaction('imgs','readwrite'); tx.objectStore('imgs').put(v,id); tx.oncomplete=res; tx.onerror=rej; });
+const dbGet  = id => new Promise(res=>{ const r=db.transaction('imgs','readonly').objectStore('imgs').get(id); r.onsuccess=e=>res(e.target.result||null); r.onerror=()=>res(null); });
+const dbDel  = id => new Promise(res=>{ const tx=db.transaction('imgs','readwrite'); tx.objectStore('imgs').delete(id); tx.oncomplete=res; });
+
+// ── Notes ─────────────────────────────────
+function getNotes(id) { return localStorage.getItem('dom_notes_'+id)||''; }
+function setNotes(id, txt) { localStorage.setItem('dom_notes_'+id, txt); }
+
+// ── Render gallery ─────────────────────────
+async function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  for (const d of DOMAINS) {
+    const blob = await dbGet(d.id);
+    const card = document.createElement('div');
+    card.className = 'd-card';
+    card.style.borderColor = '#2a2a2a';
+
+    let coverHtml;
+    if (blob) {
+      const url = blob instanceof Blob ? URL.createObjectURL(blob) : blob;
+      coverHtml = `<img class="d-cover" src="${url}" alt="${d.name}">`;
+    } else {
+      coverHtml = `<button class="d-placeholder" onclick="openModal('${d.id}');event.stopPropagation()">
+        <span class="d-ph-icon">🎬</span>
+        <span class="d-ph-text">add gif</span>
+      </button>`;
+    }
+
+    card.innerHTML = `
+      ${coverHtml}
+      <div class="d-badge" style="color:${d.color};">${d.pct}%</div>
+      <button class="d-swap" onclick="openModal('${d.id}');event.stopPropagation()">↺ swap</button>
+      <div class="d-body">
+        <div class="d-name" style="color:${d.color};">${d.name}</div>
+        <div class="d-meta">${d.pct}% of exam</div>
+        <div class="d-bar-track"><div class="d-bar-fill" style="width:0%;background:${d.color};box-shadow:0 0 5px ${d.color}50;"></div></div>
+      </div>`;
+
+    card.onclick = (e) => {
+      if (!e.target.closest('button')) openNotes(d.id);
+    };
+    gallery.appendChild(card);
+  }
+}
+
+// ── Notes page ─────────────────────────────
+let currentDomId = null;
+
+function openNotes(id) {
+  currentDomId = id;
+  const d = DOMAINS.find(x=>x.id===id);
+  document.getElementById('gallery').style.display = 'none';
+  document.getElementById('notes-page').classList.add('show');
+  document.getElementById('back-btn').style.display = 'block';
+  document.getElementById('bar-badge').style.display = 'none';
+  document.getElementById('bar-title').textContent = '📓 notes';
+  document.getElementById('notes-badge').textContent = d.pct+'% of exam';
+  document.getElementById('notes-badge').style.background = d.color+'22';
+  document.getElementById('notes-badge').style.color = d.color;
+  document.getElementById('notes-badge').style.border = '1px solid '+d.color+'44';
+  document.getElementById('notes-title').textContent = d.name;
+  document.getElementById('notes-area').value = getNotes(id);
+  document.getElementById('save-status').textContent = 'notes auto-save as you type';
+  document.getElementById('notes-area').focus();
+}
+
+function goBack() {
+  document.getElementById('gallery').style.display = 'grid';
+  document.getElementById('notes-page').classList.remove('show');
+  document.getElementById('back-btn').style.display = 'none';
+  document.getElementById('bar-badge').style.display = 'block';
+  document.getElementById('bar-title').textContent = '⚔️ exam domains — sec+ sy0-701';
+  currentDomId = null;
+}
+
+function saveNotes() {
+  if (!currentDomId) return;
+  setNotes(currentDomId, document.getElementById('notes-area').value);
+  document.getElementById('save-status').textContent = '✓ saved';
+  setTimeout(() => document.getElementById('save-status').textContent = 'notes auto-save as you type', 2000);
+}
+
+// auto-save on type
+document.getElementById('notes-area').addEventListener('input', () => {
+  if (currentDomId) {
+    setNotes(currentDomId, document.getElementById('notes-area').value);
+  }
+});
+
+// ── Image modal ────────────────────────────
+let editId = null, pendingBlob = null;
+
+function openModal(id) {
+  editId = id; pendingBlob = null;
+  const d = DOMAINS.find(x=>x.id===id);
+  document.getElementById('modal-title').textContent = 'add cover — '+d.name.toLowerCase();
+  document.getElementById('modal-url').value = '';
+  document.getElementById('file-in').value = '';
+  document.getElementById('modal-status').textContent = 'jpg · png · gif · webp · any size';
+  document.getElementById('modal-status').style.color = '#555';
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); editId=null; pendingBlob=null; }
+function handleFile(input) {
+  const f=input.files[0]; if(!f) return;
+  pendingBlob=f;
+  document.getElementById('modal-status').textContent='✓ '+f.name;
+  document.getElementById('modal-status').style.color='#FF4FA3';
+  document.getElementById('modal-url').value='';
+}
+async function saveImg() {
+  if(!editId) return;
+  const url=document.getElementById('modal-url').value.trim();
+  if(pendingBlob) await dbSave(editId, pendingBlob);
+  else if(url) await dbSave(editId, url);
+  closeModal(); renderGallery();
+}
+async function removeImg() { if(!editId) return; await dbDel(editId); closeModal(); renderGallery(); }
+document.getElementById('modal-url').addEventListener('keydown', e=>{ if(e.key==='Enter') saveImg(); if(e.key==='Escape') closeModal(); });
+
+openDB().then(()=>renderGallery());
+</script>
+</body>
+</html>
